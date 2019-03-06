@@ -1,0 +1,2 @@
+ifconfig eth0 14.14.14.2/24
+route add default gw 14.14.14.1

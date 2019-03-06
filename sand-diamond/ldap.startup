@@ -1,0 +1,2 @@
+ifconfig eth0 15.15.15.2/24
+route add default gw 15.15.15.1
