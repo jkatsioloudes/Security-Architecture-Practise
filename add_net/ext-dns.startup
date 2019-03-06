@@ -1,0 +1,2 @@
+ifconfig eth0 6.6.6.2/24
+route add default gw 6.6.6.1
