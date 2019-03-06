@@ -5,4 +5,7 @@ ifconfig eth3 9.9.9.1/24
 route add -net 10.10.10.0/24 gw 8.8.8.2
 route add -net 11.11.11.0/24 gw 9.9.9.2
 route add -net 1.1.1.0/24 gw 6.6.6.1
+route add -net 13.13.13.0/24 gw 12.12.12.2
+route add -net 14.14.14.0/24 gw 12.12.12.3
+route add -net 15.15.15.0/24 gw 12.12.12.4
 route add default gw 6.6.6.1
