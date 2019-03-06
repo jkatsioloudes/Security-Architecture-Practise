@@ -1,0 +1,2 @@
+ifconfig eth0 7.7.7.2/28
+route add default gw 7.7.7.1

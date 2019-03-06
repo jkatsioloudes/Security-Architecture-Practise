@@ -1,0 +1,4 @@
+ifconfig eth0 1.1.1.1/30
+ifconfig eth1 2.2.2.1/28
+ifconfig eth2 7.7.7.1/28
+route add default gw 2.2.2.2
