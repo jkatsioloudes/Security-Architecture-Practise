@@ -1,3 +1,20 @@
+WORKING BACKUP 1:
+
+iptables -t filter -P INPUT DROP
+iptables -t filter -P OUTPUT DROP
+iptables -t filter -P FORWARD DROP
+
+iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
+
+iptables -A FORWARD -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A FORWARD -p icmp --icmp-type echo-reply -j ACCEPT
+
+iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 2000 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -i eth0 -o eth1 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -i eth1 -o eth0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+
 https://www.thegeekstuff.com/2011/06/iptables-rules-examples/?utm_source=feedburner&utm_medium=feed&utm_campaign=Feed%253A+TheGeekStuff+(The+Geek+Stuff)
 
 iptables -t filter -nvL
