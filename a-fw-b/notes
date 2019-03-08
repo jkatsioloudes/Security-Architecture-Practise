@@ -1,16 +1,94 @@
-iptables -nvL
+https://www.thegeekstuff.com/2011/06/iptables-rules-examples/?utm_source=feedburner&utm_medium=feed&utm_campaign=Feed%253A+TheGeekStuff+(The+Geek+Stuff)
+
+iptables -t filter -nvL
+iptables -t nat -nvL
 watch -n1 iptables -nvL
-clear packet counters:
+
+
+Clear packet counters:
 iptables -Z
+
 
 iptables -t filter -P INPUT DROP
 iptables -t filter -P OUTPUT DROP
 iptables -t filter -P FORWARD DROP
 
-allow ping to the firewall
+
+Allow ping to the firewall from outside or inside:
 iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
 iptables -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
 
-allow ping to pass from the firewall
+
+There is no need for the actual firewall to send a ping itself but
+if we need to then the output chain gets the line for echo-request
+and input takes the echo-reply.
+
+
+Allow ping to pass from the firewall:
 iptables -A FORWARD -p icmp --icmp-type echo-request -j ACCEPT
 iptables -A FORWARD -p icmp --icmp-type echo-reply -j ACCEPT
+
+
+Open a specific port in machine B so that machine A can access it:
+
+BTW, based on my class notes: 
+1) RELATED, ESTABLISHED IS JUST SET ONCE and then you take care of the port.
+2) Then, for performance reasons put RELATED, ESTABLISHED RULES in the beginning for performance reasons.
+3) in class, we were doing stuff using -m state even for ping but what follows below uses -m conntrack and --ctstate.
+
+BEST RESOURCE SO FAR FOR NATTING:
+https://www.digitalocean.com/community/tutorials/how-to-forward-ports-through-a-linux-gateway-with-iptables
+
+We want to configure our firewall so that traffic flowing into our public interface (eth0) on port 80 (2000 in our case) will be forwarded to our private interface (eth1):
+(works)
+iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 2000 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -i eth0 -o eth1 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -i eth1 -o eth0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+
+Make the above rules (ping, tcp, related established) the same as above with -m state.
+
+
+http://linux-training.be/networking/ch14.html#idp69806048
+SNAT from LAN to the Internet:
+Here is an example SNAT rule. The rule says that packets coming from 10.1.1.0/24 network and exiting via eth1 will get the source ip-address set to 11.12.13.14. (Note that this is a one line command!):
+
+iptables -t nat -A POSTROUTING -o eth1 -s 10.1.1.0/24 -j SNAT --to-source 11.12.13.14
+
+
+Of course there must exist a proper iptables filter setup to allow the packet to traverse from one network to the other.
+
+# iptables script for simple classic nat websurfing
+# eth0 is internal network, eth1 is internet
+#
+echo 0 > /proc/sys/net/ipv4/ip_forward
+iptables -P INPUT ACCEPT
+iptables -P OUTPUT ACCEPT
+iptables -P FORWARD DROP
+iptables -A FORWARD -i eth0 -o eth1 -s 10.1.1.0/24 -p tcp \
+--dport 80 -j ACCEPT
+iptables -A FORWARD -i eth1 -o eth0 -d 10.1.1.0/24 -p tcp \
+--sport 80 -j ACCEPT
+iptables -t nat -A POSTROUTING -o eth1 -s 10.1.1.0/24 -j SNAT \
+--to-source 11.12.13.14
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+
+DNAT (Destination NAT):
+
+DNAT is typically used to allow packets from the internet to be redirected to an internal server (in your DMZ) and in a private address range that is inaccessible directly form the internet.
+
+This example script allows internet users to reach your internal (192.168.1.99) server via ssh (port 22).
+
+# iptables script for DNAT
+# eth0 is internal network, eth1 is internet
+#
+echo 0 > /proc/sys/net/ipv4/ip_forward
+iptables -P INPUT ACCEPT
+iptables -P OUTPUT ACCEPT
+iptables -P FORWARD DROP
+iptables -A FORWARD -i eth0 -o eth1 -s 10.1.1.0/24 -j ACCEPT
+iptables -A FORWARD -i eth1 -o eth0 -p tcp --dport 22 -j ACCEPT
+iptables -t nat -A PREROUTING -i eth1 -p tcp --dport 22 \
+-j DNAT --to-destination 10.1.1.99
+echo 1 > /proc/sys/net/ipv4/ip_forward
