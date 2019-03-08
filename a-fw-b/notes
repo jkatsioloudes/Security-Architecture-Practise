@@ -1,0 +1,16 @@
+iptables -nvL
+watch -n1 iptables -nvL
+clear packet counters:
+iptables -Z
+
+iptables -t filter -P INPUT DROP
+iptables -t filter -P OUTPUT DROP
+iptables -t filter -P FORWARD DROP
+
+allow ping to the firewall
+iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
+
+allow ping to pass from the firewall
+iptables -A FORWARD -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A FORWARD -p icmp --icmp-type echo-reply -j ACCEPT
