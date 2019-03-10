@@ -1,3 +1,3 @@
 ifconfig eth0 2.2.2.3/24
 route add default gw 2.2.2.1
-while true; do nc -lvp 3000; done
+while true; do nc -lvp 2000; done &
