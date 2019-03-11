@@ -1,2 +1,4 @@
 ifconfig eth0 10.10.10.2/24
 route add default gw 10.10.10.1
+while true; do nc -lvp 4000; done &
+
