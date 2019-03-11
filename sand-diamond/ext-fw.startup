@@ -2,6 +2,7 @@ ifconfig eth0 1.1.1.2/24
 ifconfig eth1 5.5.5.1/24
 ifconfig eth2 6.6.6.1/24
 ifconfig eth3 7.7.7.1/24
+route add -net 13.13.13.0/24 gw 6.6.6.2
 route add -net 1.1.1.0/24 gw 1.1.1.1
 route add -net 2.2.2.0/24 gw 1.1.1.1
 route add -net 3.3.3.0/24 gw 1.1.1.1
@@ -25,3 +26,5 @@ iptables -A FORWARD -i eth2 -o eth0 -p tcp --syn --dport 80 -m conntrack --ctsta
 
 iptables -A FORWARD -i eth0 -o eth2 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 iptables -A FORWARD -i eth2 -o eth0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source 1.1.1.2
