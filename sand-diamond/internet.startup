@@ -5,4 +5,3 @@ ifconfig eth3 4.4.4.1/24
 route add -net 5.5.5.0/24 gw 1.1.1.2
 route add -net 6.6.6.0/24 gw 1.1.1.2
 route add -net 7.7.7.0/24 gw 1.1.1.2
-

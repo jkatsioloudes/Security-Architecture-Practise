@@ -14,9 +14,6 @@ iptables -t filter -P INPUT DROP
 iptables -t filter -P OUTPUT DROP
 iptables -t filter -P FORWARD DROP
 
-iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
-iptables -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
-
 iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 4000 -m conntrack --ctstate NEW -j ACCEPT
 
 iptables -A FORWARD -i eth0 -o eth1 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
@@ -24,6 +21,7 @@ iptables -A FORWARD -i eth1 -o eth0 -m conntrack --ctstate ESTABLISHED,RELATED -
 
 iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 4000 -j DNAT --to-destination 10.10.10.2
 
-iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source 1.1.1.2
+iptables -A FORWARD -i eth2 -o eth0 -p tcp --syn --dport 80 -m conntrack --ctstate NEW -j ACCEPT
 
-
+iptables -A FORWARD -i eth0 -o eth2 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -i eth2 -o eth0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
