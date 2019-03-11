@@ -1,2 +1,2 @@
-ifconfig eth0 13.13.13.2/24
-route add default gw 13.13.13.1
+ifconfig eth0 16.16.16.2/24
+route add default gw 16.16.16.1
