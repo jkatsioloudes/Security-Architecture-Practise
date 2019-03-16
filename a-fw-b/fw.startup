@@ -56,3 +56,12 @@ chmod 777 /var/log/squid/access.log
 mkdir /var/cache/squid
 
 service squid start
+
+
+# SSH FORWARD RULES
+
+iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 36747 -m conntrack --ctstate NEW -j ACCEPT
+
+iptables -A FORWARD -i eth0 -o eth1 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+iptables -A FORWARD -i eth1 -o eth0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
