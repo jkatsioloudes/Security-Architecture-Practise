@@ -1,2 +1,4 @@
 ifconfig eth0 2.2.2.2/30
 route add default gw 2.2.2.1
+
+/etc/init.d/ssh start

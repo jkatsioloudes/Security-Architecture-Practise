@@ -1,0 +1,69 @@
+ifconfig eth0 1.1.1.1/30
+ifconfig eth1 2.2.2.1/30
+
+
+# DROP POLICIES
+
+iptables -t filter -P INPUT DROP
+iptables -t filter -P OUTPUT DROP
+iptables -t filter -P FORWARD DROP
+
+
+# PING ON SURFACE
+
+iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
+
+
+# PORT FORWARDING FOR 80 OUT
+
+iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 2000 -m conntrack --ctstate NEW -j ACCEPT
+
+
+# PORT FORWARDING FOR 2000 INTERNALLY
+
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 2000 -j DNAT --to-destination 2.2.2.2
+iptables -A FORWARD -i eth1 -o eth0 -p tcp --syn --dport 80 -m conntrack --ctstate NEW -j ACCEPT
+
+
+# STATEFUL CONNECTIONS BACK AND FORTH 
+
+iptables -A FORWARD -i eth0 -o eth1 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -i eth1 -o eth0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+
+# SNATTING TO SURFACE
+
+iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source 1.1.1.1
+
+
+# SQUID
+
+iptables -A INPUT -i eth1 -s 2.2.2.0/30 -p tcp --dport 3128 -j ACCEPT
+
+iptables -A INPUT -i eth0 -s 1.1.1.0/30 -p tcp -j ACCEPT
+
+iptables -A OUTPUT -p tcp -j ACCEPT
+
+iptables -t nat -A PREROUTING -i eth1 -p tcp --dport 80 -j REDIRECT --to-port 3128
+
+
+# LOGS
+
+touch /var/log/squid/access.log
+chmod 777 /var/log/squid/access.log
+
+mkdir /var/cache/squid
+
+service squid start
+
+
+# SSH FORWARD RULES
+
+iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 3456 -m conntrack --ctstate NEW -j ACCEPT
+
+iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 36747 -m conntrack --ctstate NEW -j ACCEPT
+
+iptables -A FORWARD -i eth0 -o eth1 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+iptables -A FORWARD -i eth1 -o eth0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
