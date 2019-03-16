@@ -60,7 +60,23 @@ service squid start
 
 # SSH FORWARD RULES
 
+# portknocking port
+
 iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 3456 -m conntrack --ctstate NEW -j ACCEPT
+
+# misdirection port
+
+iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 1887 -m conntrack --ctstate NEW -j ACCEPT
+
+iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 22456 -m conntrack --ctstate NEW -j ACCEPT
+
+iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 38964 -m conntrack --ctstate NEW -j ACCEPT
+
+iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 49083 -m conntrack --ctstate NEW -j ACCEPT
+
+iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 51899 -m conntrack --ctstate NEW -j ACCEPT
+
+# ssh port
 
 iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 36747 -m conntrack --ctstate NEW -j ACCEPT
 
