@@ -37,7 +37,7 @@ iptables -A FORWARD -i eth1 -o eth0 -m conntrack --ctstate ESTABLISHED,RELATED -
 iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source 1.1.1.1
 
 
-# SQUID TRIALS
+# SQUID
 
 iptables -A INPUT -i eth1 -s 2.2.2.0/30 -p tcp --dport 3128 -j ACCEPT
 
