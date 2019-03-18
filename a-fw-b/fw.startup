@@ -9,10 +9,11 @@ iptables -t filter -P OUTPUT DROP
 iptables -t filter -P FORWARD DROP
 
 
-# PING ON SURFACE
+iptables -A FORWARD -p tcp -m tcp --tcp-flags ALL FIN,PSH,URG -j LOG --log-prefix=iptables:
 
-iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
-iptables -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
+iptables -A FORWARD -p tcp -m tcp --tcp-flags SYN,FIN SYN,FIN -j LOG --log-prefix=iptables:
+
+iptables -A FORWARD -p tcp -m conntrack --ctstate NEW -m tcp ! --tcp-flags FIN,SYN,RST,ACK SYN -j LOG --log-prefix=iptables:
 
 
 # PORT FORWARDING FOR 80 OUT
@@ -37,6 +38,32 @@ iptables -A FORWARD -i eth1 -o eth0 -m conntrack --ctstate ESTABLISHED,RELATED -
 iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source 1.1.1.1
 
 
+# SSH FORWARD RULES
+
+iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 36747 -m conntrack --ctstate NEW -j ACCEPT
+
+iptables -A FORWARD -i eth0 -o eth1 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+iptables -A FORWARD -i eth1 -o eth0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+
+# LOGGED DROPPED PACKETS GOING TO XMAS SCANS AND OTHER malicious known scan combinations.
+
+# "--log-prefix=iptables:" makes log inspection much easier using cat /var/log/syslog | grep iptables
+
+iptables -A INPUT -p tcp -m tcp --tcp-flags ALL FIN,PSH,URG -j LOG --log-prefix=iptables:
+
+iptables -A INPUT -p tcp -m tcp --tcp-flags SYN,FIN SYN,FIN -j LOG --log-prefix=iptables:
+
+iptables -A INPUT -p tcp -m conntrack --ctstate NEW -m tcp ! --tcp-flags FIN,SYN,RST,ACK SYN -j LOG --log-prefix=iptables:
+
+
+# PING ON SURFACE
+
+iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
+
+
 # SQUID
 
 iptables -A INPUT -i eth1 -s 2.2.2.0/30 -p tcp --dport 3128 -j ACCEPT
@@ -56,12 +83,3 @@ chmod 777 /var/log/squid/access.log
 mkdir /var/cache/squid
 
 service squid start
-
-
-# SSH FORWARD RULES
-
-iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 36747 -m conntrack --ctstate NEW -j ACCEPT
-
-iptables -A FORWARD -i eth0 -o eth1 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-
-iptables -A FORWARD -i eth1 -o eth0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT

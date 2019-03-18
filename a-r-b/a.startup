@@ -1,2 +1,10 @@
 ifconfig eth0 1.1.1.2/30
 route add default gw 1.1.1.1
+
+iptables -P INPUT DROP 
+
+iptables -A INPUT -p tcp -m tcp --tcp-flags ALL FIN,PSH,URG -j LOG --log-prefix=iptables:
+
+iptables -A INPUT -p tcp -m tcp --tcp-flags SYN,FIN SYN,FIN -j LOG --log-prefix=iptables:
+
+iptables -A INPUT -p tcp -m conntrack --ctstate NEW -m tcp ! --tcp-flags FIN,SYN,RST,ACK SYN -j LOG --log-prefix=iptables:

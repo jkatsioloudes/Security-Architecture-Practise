@@ -29,3 +29,16 @@ iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 4000 -j DNAT --to-destinati
 iptables -t nat -A PREROUTING -i eth1 -p tcp --dport 2000 -j DNAT --to-destination 2.2.2.3
 
 iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source 1.1.1.1
+
+
+# RSYSLOG
+
+iptables -A INPUT -s 2.2.2.3 -p tcp -j ACCEPT
+
+iptables -A INPUT -s 2.2.2.3 -p udp -j ACCEPT 
+
+iptables -A OUTPUT -d 2.2.2.3 -p tcp --dport 514 -j ACCEPT
+
+iptables -A OUTPUT -d 2.2.2.3 -p udp --dport 514 -j ACCEPT 
+
+service rsyslog restart

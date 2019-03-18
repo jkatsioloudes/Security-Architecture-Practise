@@ -1,2 +1,4 @@
 ifconfig eth0 2.2.2.3/28
 route add default gw 2.2.2.1
+
+service rsyslog restart
